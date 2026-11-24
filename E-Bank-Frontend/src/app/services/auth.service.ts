@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from "@angular/common/http";
 import {jwtDecode} from "jwt-decode";
 import {Router} from "@angular/router";
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +25,7 @@ export class AuthService {
       headers: new HttpHeaders()
         .set('Content-Type', 'application/json')
     };
-    return this.http.post("http://localhost:8085/auth/login", {email :username , password : password}, options);
+    return this.http.post(`${environment.backendHost}/auth/login`, {email :username , password : password}, options);
   }
 
   loadProfile(data: any) {

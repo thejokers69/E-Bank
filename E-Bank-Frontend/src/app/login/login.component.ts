@@ -57,7 +57,13 @@ export class LoginComponent implements OnInit {
       },
       error: (err) => {
         console.error('Login error:', err);
-        this.errorMessage = err.error?.detail || err.error?.message || "Authentication failed. Please check your credentials.";
+        if (err.status === 0) {
+          this.errorMessage = 'Cannot reach the API. The backend may be waking up — wait a few seconds and try again.';
+        } else if (err.status === 401) {
+          this.errorMessage = 'Authentication failed. Please check your credentials.';
+        } else {
+          this.errorMessage = err.error?.detail || err.error?.message || err.message || 'Authentication failed. Please check your credentials.';
+        }
         this.isLoading = false;
       },
       complete: () => {
