@@ -1,0 +1,28 @@
+# Render Blueprint — push to GitHub, then create/sync via MCP create_blueprint or Dashboard.
+# Managed MySQL is not available on Render; point SPRING_DATASOURCE_* at external MySQL
+# (Aiven, Railway, DigitalOcean, PlanetScale, etc.).
+services:
+  - type: web
+    name: e-bank-backend
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: master
+    dockerfilePath: ./E-bank-Backend/Dockerfile
+    dockerContext: ./E-bank-Backend
+    healthCheckPath: /health
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
+      - key: SPRING_JPA_SHOW_SQL
+        value: "false"
+      - key: APP_CORS_ORIGINS
+        sync: false
