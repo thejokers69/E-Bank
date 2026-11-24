@@ -22,4 +22,7 @@ export class CustomerService {
   public deleteCustomer(id: number){
     return this.http.delete(environment.backendHost+"/customers/"+id);
   }
+  public updateCustomer(customer: Customer){
+    return this.http.put<Customer>(environment.backendHost+"/customers/"+customer.id, customer);
+  }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AccountsService } from '../services/accounts.service';
@@ -31,7 +31,14 @@ export class AccountsComponent implements OnInit {
   showDeleteModal: boolean = false;
   selectedOperation: any = null;
 
-  constructor(private fb : FormBuilder, private accountService : AccountsService, private route: ActivatedRoute, public authService: AuthService) { }
+  constructor(
+    private fb: FormBuilder,
+    private accountService: AccountsService,
+    private route: ActivatedRoute,
+    public authService: AuthService,
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.accountFormGroup = this.fb.group({
@@ -40,7 +47,8 @@ export class AccountsComponent implements OnInit {
     this.operationFromGroup = this.fb.group({
       operationType : this.fb.control(null),
       amount : this.fb.control(null),
-      description : this.fb.control(null)
+      description : this.fb.control(null),
+      destinationAccountId : this.fb.control(null)
     });
 
     // Handle query params for direct account loading
@@ -56,24 +64,34 @@ export class AccountsComponent implements OnInit {
     if (!this.accountId) return;
 
     this.isLoading = true;
+    this.errorMessage = '';
     this.accountService.getAccount(this.accountId, page, this.pageSize)
       .subscribe({
         next: (data) => {
-          this.accountDetailsSubject.next(data);
-          this.isInitialState = false;
-          this.currentPage = page;
-          this.isLoading = false;
+          this.ngZone.run(() => {
+            this.accountDetailsSubject.next(data);
+            this.isInitialState = false;
+            this.currentPage = page;
+            this.isLoading = false;
+            this.errorMessage = '';
+            this.cdr.detectChanges();
+          });
         },
         error: (err) => {
-          this.errorMessage = err.message;
-          this.isInitialState = false;
-          this.isLoading = false;
+          this.ngZone.run(() => {
+            this.errorMessage = this.errorText(err);
+            this.accountDetailsSubject.next(null);
+            this.isInitialState = false;
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          });
         }
       });
   }
 
   handleSearchAccount() {
     this.accountId = this.accountFormGroup.value.accountId;
+    this.errorMessage = '';
     window.scrollTo(0, 0);
     this.loadAccountData();
   }
@@ -96,39 +114,58 @@ export class AccountsComponent implements OnInit {
     const operationType = this.operationFromGroup.value.operationType;
     const amount = this.operationFromGroup.value.amount;
     const description = this.operationFromGroup.value.description;
+    const destinationAccountId = this.operationFromGroup.value.destinationAccountId;
 
     if (!operationType || !amount) {
       this.showNotification('error', 'Please fill in all required fields');
       return;
     }
 
+    if (operationType === 'TRANSFER' && !destinationAccountId) {
+      this.showNotification('error', 'Please enter a destination account ID');
+      return;
+    }
+
     if(operationType === 'DEBIT') {
       this.accountService.debit(accountId, amount, description).subscribe({
-        next : (data)=>{
-          this.loadAccountData();
-          this.operationFromGroup.reset();
-          this.operationFromGroup.patchValue({ operationType: null });
-          this.showNotification('success', 'Debit operation completed successfully');
-          this.scrollToTransactions();
+        next : ()=>{
+          this.finishOperation('Debit operation completed successfully');
         },
         error : err => {
-          this.showNotification('error', err.error.message);
+          this.showNotification('error', this.errorText(err));
         }
       });
     } else if(operationType === 'CREDIT') {
       this.accountService.credit(accountId, amount, description).subscribe({
-        next : (data)=>{
-          this.loadAccountData();
-          this.operationFromGroup.reset();
-          this.operationFromGroup.patchValue({ operationType: null });
-          this.showNotification('success', 'Credit operation completed successfully');
-          this.scrollToTransactions();
+        next : ()=>{
+          this.finishOperation('Credit operation completed successfully');
         },
         error : err => {
-          this.showNotification('error', err.error.message);
+          this.showNotification('error', this.errorText(err));
+        }
+      });
+    } else if(operationType === 'TRANSFER') {
+      this.accountService.transfer(accountId, destinationAccountId, amount, description).subscribe({
+        next : ()=>{
+          this.finishOperation('Transfer completed successfully');
+        },
+        error : err => {
+          this.showNotification('error', this.errorText(err));
         }
       });
     }
+  }
+
+  private finishOperation(message: string) {
+    this.loadAccountData();
+    this.operationFromGroup.reset();
+    this.operationFromGroup.patchValue({ operationType: null });
+    this.showNotification('success', message);
+    this.scrollToTransactions();
+  }
+
+  private errorText(err: any): string {
+    return err?.error?.message || err?.message || 'Operation failed';
   }
 
   showNotification(type: 'success' | 'error', message: string) {

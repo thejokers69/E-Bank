@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -47,8 +47,12 @@ export class AccountService {
     return this.http.get<Array<AccountOperation>>(`${this.apiUrl}/accounts/${accountId}/operations`);
   }
 
+  getAllAccounts(): Observable<Array<AccountDetails>> {
+    return this.http.get<Array<AccountDetails>>(`${this.apiUrl}/accounts`);
+  }
+
   getCustomerAccounts(customerId: string): Observable<Array<AccountDetails>> {
-    return this.http.get<Array<AccountDetails>>(`${this.apiUrl}/accounts`)
+    return this.getAllAccounts()
       .pipe(
         map((accounts: Array<AccountDetails>) =>
           accounts.filter((acc: AccountDetails) => acc.customerDTO?.id === Number(customerId))
@@ -65,16 +69,9 @@ export class AccountService {
     const params = new HttpParams()
       .set('customerId', customerId)
       .set('initialBalance', '0')
-      .set(type === 'CURRENT' ? 'overDraft' : 'interestRate', '0')
-      .set('status', 'Created');
+      .set(type === 'CURRENT' ? 'overDraft' : 'interestRate', '0');
 
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-
-    return this.http.post<AccountDetails>(`${this.apiUrl}/accounts/${endpoint}`, null, {
-      params,
-      headers
-    });
+    return this.http.post<AccountDetails>(`${this.apiUrl}/accounts/${endpoint}`, null, { params });
   }
 
   getAccountHistory(accountId: string, page: number = 0, size: number = 5): Observable<AccountHistoryDTO> {
@@ -92,8 +89,6 @@ export class AccountService {
   }
 
   deleteAccount(accountId: string): Observable<void> {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.delete<void>(`${this.apiUrl}/accounts/${accountId}`, { headers });
+    return this.http.delete<void>(`${this.apiUrl}/accounts/${accountId}`);
   }
 }

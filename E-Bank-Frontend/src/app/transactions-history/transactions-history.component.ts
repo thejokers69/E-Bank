@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -8,7 +8,7 @@ import { AccountsService } from '../services/accounts.service';
 import * as FileSaver from 'file-saver';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 /**
  * Component for displaying transactions history
@@ -45,10 +45,13 @@ export class TransactionsHistoryComponent implements OnInit, AfterViewInit {
   selectedTransaction: Transaction | null = null;
   showModal: boolean = false;
 
-  constructor(private accountsService: AccountsService) { }
+  constructor(
+    private accountsService: AccountsService,
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit() {
-    console.log('TransactionsHistoryComponent initialized');
     this.loadTransactions();
   }
 
@@ -58,13 +61,29 @@ export class TransactionsHistoryComponent implements OnInit, AfterViewInit {
 
   loadTransactions() {
     this.isLoading = true;
-    this.accountsService.getAllAccountsHistory(this.currentPage, this.pageSize).subscribe(data => {
-      this.transactions = data;
-      this.totalTransactions = data.length;
-      this.filterTransactions();
-      this.isLoading = false;
+    this.accountsService.getAllAccountsHistory(0, 500).subscribe({
+      next: (data) => {
+        this.ngZone.run(() => {
+          this.transactions = Array.isArray(data) ? data : [];
+          this.totalTransactions = this.transactions.length;
+          this.filterTransactions();
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        console.error('Error loading transactions: ', err);
+        this.ngZone.run(() => {
+          this.transactions = [];
+          this.filteredTransactions = [];
+          this.totalTransactions = 0;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
+      }
     });
   }
+
   filterTransactions() {
     this.filteredTransactions = this.transactions.filter(transaction => {
       const matchesSearch = !this.searchTerm ||
@@ -79,6 +98,7 @@ export class TransactionsHistoryComponent implements OnInit, AfterViewInit {
 
       return matchesSearch && matchesType && matchesDate;
     });
+    this.cdr.markForCheck();
   }
 
   exportToExcel(): void {
@@ -135,7 +155,7 @@ export class TransactionsHistoryComponent implements OnInit, AfterViewInit {
       `Total Amount: $${totalAmount.toFixed(2)}`,
     ], 14, 40);
 
-    doc.autoTable({
+    autoTable(doc, {
       head: [[
         'Operation ID',
         'Customer Name',

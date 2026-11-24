@@ -1,14 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Observable, catchError, throwError, BehaviorSubject } from 'rxjs';
+import { catchError, throwError, BehaviorSubject } from 'rxjs';
 import { Customer } from '../model/customer.model';
 import { CustomerService } from '../services/customer.service';
 import * as FileSaver from 'file-saver';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-customers',
@@ -23,6 +23,9 @@ export class CustomersComponent implements OnInit {
   searchFormGroup: FormGroup;
   showDeleteModal: boolean = false;
   customerToDelete: Customer | null = null;
+  showEditModal = false;
+  customerToEdit: Customer | null = null;
+  editFormGroup: FormGroup;
   isLoading = false;
   successMessage: string = '';
   showSuccessMessage: boolean = false;
@@ -30,10 +33,16 @@ export class CustomersComponent implements OnInit {
   constructor(
     private customerService: CustomerService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef
   ) {
     this.searchFormGroup = this.fb.group({
       keyword: ['']
+    });
+    this.editFormGroup = this.fb.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]]
     });
   }
 
@@ -43,27 +52,79 @@ export class CustomersComponent implements OnInit {
 
   handleSearchCustomers() {
     this.isLoading = true;
-    let kw = this.searchFormGroup.value.keyword;
+    const kw = this.searchFormGroup.value.keyword;
     this.customerService.searchCustomers(kw).pipe(
       catchError(err => {
-        this.errorMessage = err.message;
-        this.isLoading = false;
+        this.ngZone.run(() => {
+          this.errorMessage = err.message;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
         return throwError(() => err);
       })
     ).subscribe({
       next: (data) => {
-
-        this.customers$.next(data);
-        console.log(this.customers$)
-        this.isLoading = false;
+        this.ngZone.run(() => {
+          this.customers$.next(data);
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
       },
-      error: () => this.isLoading = false
+      error: () => {
+        this.ngZone.run(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
+      }
     });
   }
 
   handleDeleteCustomer(customer: Customer) {
     this.customerToDelete = customer;
     this.showDeleteModal = true;
+  }
+
+  handleEditCustomer(customer: Customer) {
+    this.customerToEdit = customer;
+    this.editFormGroup.patchValue({
+      name: customer.name,
+      email: customer.email
+    });
+    this.showEditModal = true;
+  }
+
+  cancelEdit() {
+    this.showEditModal = false;
+    this.customerToEdit = null;
+  }
+
+  confirmEdit() {
+    if (!this.customerToEdit || this.editFormGroup.invalid) {
+      this.editFormGroup.markAllAsTouched();
+      return;
+    }
+    const updated: Customer = {
+      ...this.customerToEdit,
+      name: this.editFormGroup.value.name,
+      email: this.editFormGroup.value.email
+    };
+    this.customerService.updateCustomer(updated).subscribe({
+      next: () => {
+        const currentCustomers = this.customers$.value.map(c =>
+          c.id === updated.id ? { ...c, name: updated.name, email: updated.email } : c
+        );
+        this.customers$.next(currentCustomers);
+        this.showSuccessMessage = true;
+        this.successMessage = `Customer ${updated.name} has been updated`;
+        this.cancelEdit();
+        setTimeout(() => {
+          this.showSuccessMessage = false;
+        }, 3000);
+      },
+      error: (err) => {
+        this.errorMessage = err?.error?.message || 'Failed to update customer';
+      }
+    });
   }
 
   confirmDelete() {
@@ -157,7 +218,7 @@ export class CustomersComponent implements OnInit {
     doc.setTextColor(44, 62, 80);
     doc.text(`Total Customers: ${totalCustomers}`, 14, 40);
 
-    doc.autoTable({
+    autoTable(doc, {
       head: [['ID', 'Name', 'Email']],
       body: this.customers$.value.map(customer => [
         customer.id,

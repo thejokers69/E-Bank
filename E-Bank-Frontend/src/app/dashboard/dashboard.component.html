@@ -260,11 +260,11 @@
                   <div class="d-flex align-items-center py-2">
                     <div class="avatar-wrapper me-3">
                       <div class="avatar rounded-circle text-white d-flex align-items-center justify-content-center">
-                        {{account.customerDTO.name.charAt(0)}}
+                        {{ accountName(account).charAt(0) }}
                       </div>
                     </div>
                     <div>
-                      <h6 class="mb-0 fw-semibold text-dark">{{ account.customerDTO.name }}</h6>
+                      <h6 class="mb-0 fw-semibold text-dark">{{ accountName(account) }}</h6>
                       <small class="text-muted d-block">Added: {{ account.createdAt | date:'mediumDate' }}</small>
                     </div>
                   </div>

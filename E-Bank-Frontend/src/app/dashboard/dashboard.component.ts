@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../services/dashboard.service';
@@ -15,8 +15,10 @@ import {
   CategoryScale,
   DoughnutController,
   ArcElement,
+  Filler,
 } from 'chart.js';
 import {AuthService} from "../services/auth.service";
+import { AccountService } from '../services/account.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -49,7 +51,14 @@ export class DashboardComponent implements OnInit {
   currentTime: string = '';
   showNotification: boolean = false;
 
-  constructor(private dashboardService: DashboardService, private router: Router, private authService: AuthService) { }
+  constructor(
+    private dashboardService: DashboardService,
+    private accountService: AccountService,
+    private router: Router,
+    private authService: AuthService,
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -67,12 +76,54 @@ export class DashboardComponent implements OnInit {
   loadDashboardData() {
     this.dashboardService.getDashboardInfo().subscribe({
       next: (data) => {
-        this.dashboardData = this.formatDashboardData(data);
-        this.filteredAccounts = this.dashboardData.latestBankAccounts;
-        console.log("Dashboard Data: ", this.dashboardData);
+        this.ngZone.run(() => {
+          this.dashboardData = this.formatDashboardData(data);
+          this.setRecentAccounts(data?.latestBankAccounts);
+          if (!this.filteredAccounts.length) {
+            this.loadRecentAccountsFallback();
+          }
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
         console.error("Error fetching dashboard data: ", err);
+        this.ngZone.run(() => {
+          this.filteredAccounts = [];
+          this.loadRecentAccountsFallback();
+          this.cdr.detectChanges();
+        });
+      }
+    });
+  }
+
+  private setRecentAccounts(accounts: any): void {
+    const list = Array.isArray(accounts) ? accounts : [];
+    const sorted = [...list].sort((a, b) => {
+      const aTime = a?.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b?.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
+    });
+    this.dashboardData = {
+      ...this.dashboardData,
+      latestBankAccounts: sorted.slice(0, 5)
+    };
+    this.filteredAccounts = this.dashboardData.latestBankAccounts;
+  }
+
+  private loadRecentAccountsFallback(): void {
+    this.accountService.getAllAccounts().subscribe({
+      next: (accounts) => {
+        this.ngZone.run(() => {
+          this.setRecentAccounts(accounts);
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        console.error('Error fetching accounts fallback: ', err);
+        this.ngZone.run(() => {
+          this.filteredAccounts = [];
+          this.cdr.detectChanges();
+        });
       }
     });
   }
@@ -106,24 +157,24 @@ export class DashboardComponent implements OnInit {
 
   onSearch(): void {
     if (!this.searchTerm) {
-      this.filteredAccounts = this.dashboardData.latestBankAccounts;
+      this.filteredAccounts = this.dashboardData.latestBankAccounts || [];
       return;
     }
 
     const searchTermLower = this.searchTerm.toLowerCase();
-    this.filteredAccounts = this.dashboardData.latestBankAccounts.filter((account: any) => {
+    this.filteredAccounts = (this.dashboardData.latestBankAccounts || []).filter((account: any) => {
       return (
-        account.customerDTO.name.toLowerCase().includes(searchTermLower) ||
-        account.type.toLowerCase().includes(searchTermLower) ||
-        account.status.toLowerCase().includes(searchTermLower) ||
-        account.balance.toString().includes(searchTermLower)
+        this.accountName(account).toLowerCase().includes(searchTermLower) ||
+        (account.type || '').toLowerCase().includes(searchTermLower) ||
+        (account.status || '').toLowerCase().includes(searchTermLower) ||
+        String(account.balance ?? '').includes(searchTermLower)
       );
     });
   }
 
   clearSearch(): void {
     this.searchTerm = '';
-    this.filteredAccounts = this.dashboardData.latestBankAccounts;
+    this.filteredAccounts = this.dashboardData.latestBankAccounts || [];
   }
 
   getDashboardChartsInfo(): void {
@@ -131,14 +182,20 @@ export class DashboardComponent implements OnInit {
       next: (data) => {
         this.dashboardChartsInfo = data;
 
-        const chart1Labels = data.dailyTransactionVolume.map((item: any) => item.month);
-        const chart1Data = data.dailyTransactionVolume.map((item: any) => item.volume);
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const volume = data.dailyTransactionVolume || [];
+        const types = data.bankAccountsByType || [];
+        const chart1Labels = volume.map((item: any) => monthNames[item.month - 1] || String(item.month));
+        const chart1Data = volume.map((item: any) => item.volume);
 
-        const chart2Labels = data.bankAccountsByType.map((item: any) => item.type);
-        const chart2Data = data.bankAccountsByType.map((item: any) => item.count);
+        const chart2Labels = types.map((item: any) => item.type);
+        const chart2Data = types.map((item: any) => item.count);
 
-        this.createTransactionChart(chart1Labels, chart1Data);
-        this.createBankAccountChart(chart2Labels, chart2Data);
+        this.ngZone.run(() => {
+          this.createTransactionChart(chart1Labels, chart1Data);
+          this.createBankAccountChart(chart2Labels, chart2Data);
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
         console.error("Error fetching dashboard chart data: ", err);
@@ -147,7 +204,7 @@ export class DashboardComponent implements OnInit {
   }
 
   createTransactionChart(labels: string[], data: number[]) {
-    Chart.register(LineController, LineElement, PointElement, LinearScale, Title, Tooltip, CategoryScale);
+    Chart.register(LineController, LineElement, PointElement, LinearScale, Title, Tooltip, CategoryScale, Filler);
 
     this.transactionChart = new Chart('transactionChart', {
       type: 'line',
@@ -250,7 +307,7 @@ export class DashboardComponent implements OnInit {
   }
 
   applyFilters(): void {
-    let filtered = this.dashboardData.latestBankAccounts;
+    let filtered = this.dashboardData.latestBankAccounts || [];
 
     if (this.selectedFilters.type) {
       filtered = filtered.filter((account: any) =>
@@ -284,15 +341,16 @@ export class DashboardComponent implements OnInit {
       const searchTermLower = this.searchTerm.toLowerCase();
       filtered = filtered.filter((account: any) => {
         return (
-          account.customerDTO.name.toLowerCase().includes(searchTermLower) ||
-          account.type.toLowerCase().includes(searchTermLower) ||
-          account.status.toLowerCase().includes(searchTermLower) ||
-          account.balance.toString().includes(searchTermLower)
+          this.accountName(account).toLowerCase().includes(searchTermLower) ||
+          (account.type || '').toLowerCase().includes(searchTermLower) ||
+          (account.status || '').toLowerCase().includes(searchTermLower) ||
+          String(account.balance ?? '').includes(searchTermLower)
         );
       });
     }
 
     this.filteredAccounts = filtered;
+    this.cdr.detectChanges();
   }
 
   showWelcomeNotification() {
@@ -323,5 +381,9 @@ export class DashboardComponent implements OnInit {
       queryParams: { id: accountId },
       fragment: 'top'
     });
+  }
+
+  accountName(account: any): string {
+    return account?.customerDTO?.name || account?.customer?.name || 'Customer';
   }
 }
