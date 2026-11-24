@@ -40,7 +40,7 @@ public class CustomerRestController {
     }
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     @PutMapping("/customers/{customerId}")
-    public CustomerDTO updateCustomer(@PathVariable Long customerId, @RequestBody CustomerDTO customerDTO){
+    public CustomerDTO updateCustomer(@PathVariable Long customerId, @RequestBody CustomerDTO customerDTO) throws CustomerNotFoundException {
         customerDTO.setId(customerId);
         return bankAccountService.updateCustomer(customerDTO);
     }

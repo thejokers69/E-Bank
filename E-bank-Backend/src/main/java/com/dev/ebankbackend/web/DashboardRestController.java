@@ -24,23 +24,29 @@ public class DashboardRestController {
     private CustomerService customerService;
 
     @GetMapping("/dashboard/dataV1")
-    public Map<String, Object> getDashboardDataV1() throws BankAccountNotFoundException {
+    public Map<String, Object> getDashboardDataV1() {
         Map<String, Object> dashboardData = new HashMap<>();
 
-        List<BankAccountDTO> latestBankAccounts = bankAccountService.getLatestBankAccounts();
-        dashboardData.put("latestBankAccounts", latestBankAccounts);
+        List<BankAccountDTO> latestBankAccounts;
+        try {
+            latestBankAccounts = bankAccountService.getLatestBankAccounts();
+        } catch (Exception ex) {
+            latestBankAccounts = List.of();
+            System.err.println("Failed to load latest bank accounts: " + ex.getMessage());
+        }
+        dashboardData.put("latestBankAccounts", latestBankAccounts != null ? latestBankAccounts : List.of());
 
         Double monthlyTransactionSum = bankAccountService.getMonthlyTransactionSum();
-        dashboardData.put("monthlyTransactionSum", monthlyTransactionSum);
+        dashboardData.put("monthlyTransactionSum", monthlyTransactionSum != null ? monthlyTransactionSum : 0.0);
 
         Double totalBalanceSum = bankAccountService.getTotalBalanceSum();
-        dashboardData.put("totalBalanceSum", totalBalanceSum);
+        dashboardData.put("totalBalanceSum", totalBalanceSum != null ? totalBalanceSum : 0.0);
 
         Long totalNumberOfBankAccounts = bankAccountService.getTotalNumberOfBankAccounts();
-        dashboardData.put("totalNumberOfBankAccounts", totalNumberOfBankAccounts);
+        dashboardData.put("totalNumberOfBankAccounts", totalNumberOfBankAccounts != null ? totalNumberOfBankAccounts : 0L);
 
         Long totalNumberOfCustomers = customerService.getTotalNumberOfCustomers();
-        dashboardData.put("totalNumberOfCustomers", totalNumberOfCustomers);
+        dashboardData.put("totalNumberOfCustomers", totalNumberOfCustomers != null ? totalNumberOfCustomers : 0L);
 
         return dashboardData;
     }

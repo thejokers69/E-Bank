@@ -4,18 +4,24 @@ package com.dev.ebankbackend.repositories;
 import com.dev.ebankbackend.entities.AccountOperation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
 public interface AccountOperationRepository extends JpaRepository<AccountOperation,Long> {
   List<AccountOperation> findByBankAccountId(String accountId);
   Page<AccountOperation> findByBankAccountIdOrderByOperationDateDesc(String accountId, Pageable pageable);
-  Page<AccountOperation>  findAllByOrderByOperationDateDesc (Pageable pageable);
+  @EntityGraph(attributePaths = {"bankAccount", "bankAccount.customer"})
+  Page<AccountOperation> findAllByOrderByOperationDateDesc(Pageable pageable);
 
 
-  @Query("SELECT COUNT(a) " +
+  @Query("SELECT COUNT(a) FROM AccountOperation a WHERE a.bankAccount.id = :accountId AND YEAR(a.operationDate) = :year")
+  long countByAccountIdAndYear(@Param("accountId") String accountId, @Param("year") int year);
+
+  @Query("SELECT COALESCE(SUM(a.amount), 0) " +
           "FROM AccountOperation a " +
           "WHERE MONTH(a.operationDate) = MONTH(CURRENT_DATE) " +
           "AND YEAR(a.operationDate) = YEAR(CURRENT_DATE)")

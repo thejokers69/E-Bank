@@ -2,20 +2,23 @@ package com.dev.ebankbackend.repositories;
 
 
 import com.dev.ebankbackend.entities.BankAccount;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
 public interface BankAccountRepository extends JpaRepository<BankAccount,String> {
-    @Query("SELECT SUM(b.balance) FROM BankAccount b")
+    List<BankAccount> findByCustomer_Id(Long customerId);
+
+    @Query("SELECT COALESCE(SUM(b.balance), 0) FROM BankAccount b")
     Double getTotalBalanceSum();
 
     @Query("SELECT COUNT(b) FROM BankAccount b")
     Long getTotalNumberOfBankAccounts();
 
-    @Query("SELECT b FROM BankAccount b ORDER BY b.createdAt DESC LIMIT 5")
-    List<BankAccount> findTop5LatestAccounts();
+    @EntityGraph(attributePaths = "customer")
+    List<BankAccount> findTop5ByOrderByCreatedAtDesc();
 
     @Query("SELECT TYPE(b) AS type, COUNT(b) " +
             "FROM BankAccount b " +
