@@ -49,7 +49,7 @@ public class EBankBackendApplication {
                             AccountOperationRepository accountOperationRepository) {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         return args -> {
-            Stream.of("hamza","ayman","ismail")
+            Stream.of("hamza", "ayman", "ismail", "mohamed")
                     .forEach(name -> {
                         Customer customer = new Customer();
                         customer.setName(name);

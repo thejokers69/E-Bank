@@ -1,13 +1,16 @@
 package com.dev.ebankbackend.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -31,10 +34,13 @@ public class SecurityController {
     }
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody Map<String, String> credentials) {
+        String login = credentials.get("email");
+        if (login == null || login.isBlank()) {
+            login = credentials.get("username");
+        }
         try {
-            System.out.println(credentials.get("email"));
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(credentials.get("email"), credentials.get("password"))
+                    new UsernamePasswordAuthenticationToken(login, credentials.get("password"))
             );
 
             Instant now = Instant.now();
@@ -43,7 +49,7 @@ public class SecurityController {
                     .collect(Collectors.joining(" "));
 
             JwtClaimsSet claims = JwtClaimsSet.builder()
-                    .subject(credentials.get("email"))
+                    .subject(authentication.getName())
                     .issuedAt(now)
                     .expiresAt(now.plus(30, ChronoUnit.MINUTES))
                     .claim("scope", scope)
@@ -53,8 +59,8 @@ public class SecurityController {
                     JwsHeader.with(MacAlgorithm.HS512).build(), claims)).getTokenValue();
 
             return Map.of("access-token", token);
-        } catch (Exception ex) {
-            throw new RuntimeException("Authentication failed: " + ex.getMessage());
+        } catch (AuthenticationException ex) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication failed. Please check your credentials.");
         }
     }
 
