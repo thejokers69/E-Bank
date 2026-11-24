@@ -1,5 +1,8 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { NgxPaginationModule } from 'ngx-pagination';
 import { Transaction } from '../model/transaction.model';
 import { AccountsService } from '../services/accounts.service';
 import * as FileSaver from 'file-saver';
@@ -12,6 +15,8 @@ import 'jspdf-autotable';
  */
 @Component({
   selector: 'app-transactions-history',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NgxPaginationModule],
   templateUrl: './transactions-history.component.html',
   styleUrls: ['./transactions-history.component.css'],
   animations: [

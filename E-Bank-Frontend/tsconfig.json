@@ -14,11 +14,13 @@
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
-    "typeRoots": ["node_modules/@types", "src"],
+    "moduleResolution": "bundler",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
     "importHelpers": true,
-    "target": "es2017",
-    "module": "es2020",
+    "target": "es2022",
+    "module": "es2022",
     "lib": [
       "es2020",
       "dom"
@@ -28,7 +30,10 @@
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
-    "strictTemplates": true
+    "strictTemplates": false
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts"
+  ]
 }

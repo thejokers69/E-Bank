@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import {DashboardService} from "../services/dashboard.service";
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { DashboardService } from '../services/dashboard.service';
 import { Router } from '@angular/router';
+import { NumberFormatPipe } from '../pipes/number-format.pipe';
 import {
   Chart,
   LineController,
@@ -17,6 +20,8 @@ import {AuthService} from "../services/auth.service";
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NumberFormatPipe],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -49,7 +54,7 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.loadDashboardData();
     this.getDashboardChartsInfo();
-    
+
     // Check if user just logged in
     const justLoggedIn = localStorage.getItem('justLoggedIn');
     if (justLoggedIn === 'true') {
@@ -293,7 +298,7 @@ export class DashboardComponent implements OnInit {
   showWelcomeNotification() {
     // Get username from auth service
     this.userName = this.authService.username || 'User';
-    
+
     // Set current time greeting
     const hour = new Date().getHours();
     if (hour < 12) {
@@ -303,10 +308,10 @@ export class DashboardComponent implements OnInit {
     } else {
       this.currentTime = 'Good Evening';
     }
-    
+
     // Show notification
     this.showNotification = true;
-    
+
     // Hide notification after 5 seconds
     setTimeout(() => {
       this.showNotification = false;

@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from "@angular/router";
-import { Customer } from "../model/customer.model";
-import { BehaviorSubject, catchError, Observable, throwError, finalize, tap } from "rxjs";
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { catchError, Observable, throwError, finalize, tap } from 'rxjs';
 import { AccountService, AccountDetails, AccountOperation, AccountHistoryDTO, CustomerDTO } from '../services/account.service';
 
 @Component({
   selector: 'app-customer-accounts',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './customer-accounts.component.html',
   styleUrls: ['./customer-accounts.component.css']
 })

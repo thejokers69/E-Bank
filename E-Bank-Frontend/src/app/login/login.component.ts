@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {AuthService} from "../services/auth.service";
-import {Router, ActivatedRoute} from "@angular/router";
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AuthService } from '../services/auth.service';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-login',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -32,7 +35,7 @@ export class LoginComponent implements OnInit {
     this.errorMessage = '';
     let username = this.formLogin.value.username;
     let password = this.formLogin.value.password;
-    
+
     this.authService.login(username, password).subscribe({
       next: (data: any) => {
         try {
@@ -54,7 +57,7 @@ export class LoginComponent implements OnInit {
       },
       error: (err) => {
         console.error('Login error:', err);
-        this.errorMessage = err.error?.message || "Authentication failed. Please check your credentials.";
+        this.errorMessage = err.error?.detail || err.error?.message || "Authentication failed. Please check your credentials.";
         this.isLoading = false;
       },
       complete: () => {

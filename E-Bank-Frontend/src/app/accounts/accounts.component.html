@@ -1,7 +1,14 @@
 <div class="notification" *ngIf="notification" [ngClass]="notification.type">
   <div class="notification-content">
-    <i class="bi" [ngClass]="notification.type === 'success' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
-    <span>{{notification.message}}</span>
+    <i
+      class="bi"
+      [ngClass]="
+        notification.type === 'success'
+          ? 'bi-check-circle-fill'
+          : 'bi-x-circle-fill'
+      "
+    ></i>
+    <span>{{ notification.message }}</span>
   </div>
   <button class="notification-close" (click)="clearNotification()">
     <i class="bi bi-x"></i>
@@ -20,19 +27,22 @@
       <form [formGroup]="accountFormGroup" (ngSubmit)="handleSearchAccount()">
         <div class="search-box">
           <i class="bi bi-search search-icon"></i>
-          <input type="text"
-                 formControlName="accountId"
-                 class="form-control"
-                 placeholder="Enter account ID to search..."
-                 [readonly]="!isInitialState"
-          >
+          <input
+            type="text"
+            formControlName="accountId"
+            class="form-control"
+            placeholder="Enter account ID to search..."
+            [readonly]="!isInitialState"
+          />
           <ng-container *ngIf="isInitialState; else resetButton">
-            <button class="btn btn-primary search-btn">
-              Search Account
-            </button>
+            <button class="btn btn-primary search-btn">Search Account</button>
           </ng-container>
           <ng-template #resetButton>
-            <button type="button" class="btn btn-outline-primary reset-btn" (click)="resetSearch()">
+            <button
+              type="button"
+              class="btn btn-outline-primary reset-btn"
+              (click)="resetSearch()"
+            >
               <i class="bi bi-arrow-counterclockwise"></i>
               New Search
             </button>
@@ -80,11 +90,22 @@
             <i class="bi bi-file-earmark-text"></i>
           </div>
           <svg class="connecting-lines" width="200" height="50">
-            <line x1="70" y1="25" x2="130" y2="25" stroke="#4569D3" stroke-width="2" stroke-dasharray="5,5"/>
+            <line
+              x1="70"
+              y1="25"
+              x2="130"
+              y2="25"
+              stroke="#4569D3"
+              stroke-width="2"
+              stroke-dasharray="5,5"
+            />
           </svg>
         </div>
         <h3>Welcome to Account Information Center</h3>
-        <p>Enter an account ID to access detailed information and manage transactions</p>
+        <p>
+          Enter an account ID to access detailed information and manage
+          transactions
+        </p>
         <div class="feature-cards">
           <div class="feature-card">
             <div class="feature-icon">
@@ -109,12 +130,10 @@
     </div>
 
     <ng-template #errorTemplate>
-      <ng-container *ngIf="errorMessage ; else loading">
-        <div class="text-danger">{{errorMessage}}</div>
+      <ng-container *ngIf="errorMessage; else loading">
+        <div class="text-danger">{{ errorMessage }}</div>
       </ng-container>
-      <ng-template #loading>
-        Loading ...
-      </ng-template>
+      <ng-template #loading> Loading ... </ng-template>
     </ng-template>
 
     <div class="not-found-state" *ngIf="errorMessage && !isInitialState">
@@ -131,15 +150,26 @@
       </div>
     </div>
 
-    <div class="account-details" *ngIf="!isInitialState && !isLoading && (accountDetails$ | async) as accountDetails">
+    <div
+      class="account-details"
+      *ngIf="
+        !isInitialState &&
+        !isLoading &&
+        (accountDetails$ | async) as accountDetails
+      "
+    >
       <div class="account-info">
         <div class="info-card">
           <div class="info-item">
             <i class="bi bi-person-badge"></i>
             <div class="info-content single-line">
               <span class="label">Account ID:</span>
-              <span class="badge account-badge" [title]="accountDetails.accountId" (click)="copyToClipboard(accountDetails.accountId)">
-                {{accountDetails.accountId}}
+              <span
+                class="badge account-badge"
+                [title]="accountDetails.accountId"
+                (click)="copyToClipboard(accountDetails.accountId)"
+              >
+                {{ accountDetails.accountId }}
               </span>
             </div>
           </div>
@@ -148,14 +178,18 @@
             <div class="info-content single-line">
               <span class="label">Balance:</span>
               <span class="badge balance-badge">
-                {{accountDetails.balance | number:'1.2-2'}} $
+                {{ accountDetails.balance | number : "1.2-2" }} $
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="transactions-section" *ngIf="accountDetails$ | async as accountDetails" id="transactionsTable">
+      <div
+        class="transactions-section"
+        *ngIf="accountDetails$ | async as accountDetails"
+        id="transactionsTable"
+      >
         <div class="section-header">
           <div class="header-icon">
             <i class="bi bi-clock-history"></i>
@@ -164,45 +198,76 @@
           <div class="transaction-count">
             <span class="count-badge">
               <i class="bi bi-list-check"></i>
-              {{accountDetails.accountOperationDTOS.length}} Transactions
+              {{ accountDetails.accountOperationDTOS.length }} Transactions
             </span>
           </div>
         </div>
 
-        <div class="search-filter-container" *ngIf="accountDetails.accountOperationDTOS.length > 0">
+        <div
+          class="search-filter-container"
+          *ngIf="accountDetails.accountOperationDTOS.length > 0"
+        >
           <div class="search-box">
             <i class="bi bi-search"></i>
-            <input type="text" placeholder="Search transactions..." [(ngModel)]="searchTerm" name="searchTerm" class="search-input">
+            <input
+              type="text"
+              placeholder="Search transactions..."
+              [(ngModel)]="searchTerm"
+              name="searchTerm"
+              class="search-input"
+            />
           </div>
 
           <div class="filter-buttons">
-            <button class="filter-btn" [class.active]="selectedFilter === 'all'" (click)="filterOperations('all')">
+            <button
+              class="filter-btn"
+              [class.active]="selectedFilter === 'all'"
+              (click)="filterOperations('all')"
+            >
               <i class="bi bi-grid"></i>
               All
             </button>
-            <button class="filter-btn" [class.active]="selectedFilter === 'debit'" (click)="filterOperations('debit')">
+            <button
+              class="filter-btn"
+              [class.active]="selectedFilter === 'debit'"
+              (click)="filterOperations('debit')"
+            >
               <i class="bi bi-arrow-down-circle"></i>
               Debit
             </button>
-            <button class="filter-btn" [class.active]="selectedFilter === 'credit'" (click)="filterOperations('credit')">
+            <button
+              class="filter-btn"
+              [class.active]="selectedFilter === 'credit'"
+              (click)="filterOperations('credit')"
+            >
               <i class="bi bi-arrow-up-circle"></i>
               Credit
             </button>
-            <button class="filter-btn" [class.active]="selectedFilter === 'recent'" (click)="filterOperations('recent')">
+            <button
+              class="filter-btn"
+              [class.active]="selectedFilter === 'recent'"
+              (click)="filterOperations('recent')"
+            >
               <i class="bi bi-clock-history"></i>
               Recent
             </button>
           </div>
         </div>
 
-        <div class="no-transactions-state" *ngIf="accountDetails.accountOperationDTOS.length === 0">
+        <div
+          class="no-transactions-state"
+          *ngIf="accountDetails.accountOperationDTOS.length === 0"
+        >
           <div class="no-transactions-content">
             <div class="no-transactions-icon">
               <i class="bi bi-clock-history"></i>
               <i class="bi bi-x-circle overlay-icon"></i>
             </div>
             <h3>No Transactions Yet</h3>
-            <p>This account hasn't had any transactions yet. New transactions will appear here when they occur.</p>
+            <p>
+              This account hasn't had any transactions yet. New transactions
+              will appear here when they occur.
+            </p>
             <div class="transaction-types">
               <div class="type-item">
                 <i class="bi bi-arrow-down-circle text-danger"></i>
@@ -216,22 +281,36 @@
           </div>
         </div>
 
-        <div class="table-responsive" *ngIf="accountDetails.accountOperationDTOS.length > 0">
-          <div *ngIf="filteredOperations.length === 0" class="no-filtered-operations">
+        <div
+          class="table-responsive"
+          *ngIf="accountDetails.accountOperationDTOS.length > 0"
+        >
+          <div
+            *ngIf="filteredOperations.length === 0"
+            class="no-filtered-operations"
+          >
             <div class="no-operations-content">
               <div class="no-operations-icon">
-                <i class="bi" [ngClass]="{
-                  'bi-arrow-down-circle-fill text-danger': selectedFilter === 'debit',
-                  'bi-arrow-up-circle-fill text-success': selectedFilter === 'credit',
-                  'bi-clock-history text-primary': selectedFilter === 'recent',
-                  'bi-grid-fill text-primary': selectedFilter === 'all'
-                }"></i>
+                <i
+                  class="bi"
+                  [ngClass]="{
+                    'bi-arrow-down-circle-fill text-danger':
+                      selectedFilter === 'debit',
+                    'bi-arrow-up-circle-fill text-success':
+                      selectedFilter === 'credit',
+                    'bi-clock-history text-primary':
+                      selectedFilter === 'recent',
+                    'bi-grid-fill text-primary': selectedFilter === 'all'
+                  }"
+                ></i>
               </div>
               <div class="no-operations-text">
-                <h3>No {{selectedFilter | titlecase}} Operations</h3>
+                <h3>No {{ selectedFilter | titlecase }} Operations</h3>
                 <p *ngIf="searchTerm" class="search-message">
                   <i class="bi bi-search"></i>
-                  No {{selectedFilter}} operations match your search "{{searchTerm}}"
+                  No {{ selectedFilter }} operations match your search "{{
+                    searchTerm
+                  }}"
                 </p>
                 <p *ngIf="!searchTerm" class="info-message">
                   <ng-container [ngSwitch]="selectedFilter">
@@ -254,7 +333,10 @@
                   </ng-container>
                 </p>
               </div>
-              <button class="btn btn-light clear-filters-btn" (click)="clearFilters()">
+              <button
+                class="btn btn-light clear-filters-btn"
+                (click)="clearFilters()"
+              >
                 <i class="bi bi-arrow-counterclockwise"></i>
                 Clear Filters
               </button>
@@ -291,23 +373,44 @@
             </thead>
             <tbody>
               <tr *ngFor="let op of filteredOperations">
-                <td><span class="operation-id">#{{op.id}}</span></td>
+                <td>
+                  <span class="operation-id">#{{ op.id }}</span>
+                </td>
                 <td>
                   <span class="date-badge">
                     <i class="bi bi-calendar3"></i>
-                    {{op.operationDate | date:'MMM dd, yyyy'}} at {{op.operationDate | date:'HH:mm'}}
+                    {{ op.operationDate | date : "MMM dd, yyyy" }} at
+                    {{ op.operationDate | date : "HH:mm" }}
                   </span>
                 </td>
                 <td>
-                  <span class="operation-type" [ngClass]="op.type.toLowerCase()">
-                    <i class="bi" [ngClass]="op.type === 'DEBIT' ? 'bi-arrow-down-circle' : 'bi-arrow-up-circle'"></i>
-                    {{op.type}}
+                  <span
+                    class="operation-type"
+                    [ngClass]="op.type.toLowerCase()"
+                  >
+                    <i
+                      class="bi"
+                      [ngClass]="
+                        op.type === 'DEBIT'
+                          ? 'bi-arrow-down-circle'
+                          : 'bi-arrow-up-circle'
+                      "
+                    ></i>
+                    {{ op.type }}
                   </span>
                 </td>
                 <td class="text-center">
                   <span class="amount-badge" [ngClass]="op.type.toLowerCase()">
-                    <i class="bi" [ngClass]="op.type === 'DEBIT' ? 'bi-arrow-down-circle' : 'bi-arrow-up-circle'"></i>
-                    {{op.type === 'DEBIT' ? '-' : '+'}}{{op.amount | number:'1.2-2'}} $
+                    <i
+                      class="bi"
+                      [ngClass]="
+                        op.type === 'DEBIT'
+                          ? 'bi-arrow-down-circle'
+                          : 'bi-arrow-up-circle'
+                      "
+                    ></i>
+                    {{ op.type === "DEBIT" ? "-" : "+"
+                    }}{{ op.amount | number : "1.2-2" }} $
                   </span>
                 </td>
               </tr>
@@ -317,68 +420,104 @@
       </div>
     </div>
 
-
-
     <span *ngIf="authService.roles.includes('ADMIN')">
-    <div class="operations-section" *ngIf="accountDetails$ | async as accountDetails">
-      <div class="section-header">
-        <div class="header-icon">
-          <i class="bi bi-check-circle"></i>
-        </div>
-        <h3>Account Operations</h3>
-      </div>
-
-      <form [formGroup]="operationFromGroup" (ngSubmit)="handleAccountOperation()" class="operation-form">
-        <div class="mb-3">
-          <label class="form-label">Operation Type:</label>
-          <div class="operation-type-grid">
-            <div class="operation-choice"
-                 [class.active]="operationFromGroup.get('operationType')?.value === 'CREDIT'"
-                 [class.CREDIT]="operationFromGroup.get('operationType')?.value === 'CREDIT'"
-                 (click)="selectOperationType('CREDIT')">
-              <div class="icon-wrapper credit">
-                <i class="bi bi-arrow-up-circle-fill"></i>
-              </div>
-              <span>Credit</span>
-              <p class="description">Add funds to account</p>
-            </div>
-            <div class="operation-choice"
-                 [class.active]="operationFromGroup.get('operationType')?.value === 'DEBIT'"
-                 [class.DEBIT]="operationFromGroup.get('operationType')?.value === 'DEBIT'"
-                 (click)="selectOperationType('DEBIT')">
-              <div class="icon-wrapper debit">
-                <i class="bi bi-arrow-down-circle-fill"></i>
-              </div>
-              <span>Debit</span>
-              <p class="description">Withdraw from account</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Amount</label>
-          <div class="amount-input">
-            <i class="bi bi-currency-dollar"></i>
-            <input type="number" formControlName="amount" class="form-control" placeholder="Enter amount" min="0" required>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Description</label>
-          <div class="description-input">
-            <i class="bi bi-chat-left-text"></i>
-            <input type="text" formControlName="description" class="form-control" placeholder="Enter description">
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary" [disabled]="!operationFromGroup.get('operationType')?.value || !operationFromGroup.get('amount')?.value">
+      <div
+        class="operations-section"
+        *ngIf="accountDetails$ | async as accountDetails"
+      >
+        <div class="section-header">
+          <div class="header-icon">
             <i class="bi bi-check-circle"></i>
-            Submit Operation
-          </button>
+          </div>
+          <h3>Account Operations</h3>
         </div>
-      </form>
-    </div>
+
+        <form
+          [formGroup]="operationFromGroup"
+          (ngSubmit)="handleAccountOperation()"
+          class="operation-form"
+        >
+          <div class="mb-3">
+            <label class="form-label">Operation Type:</label>
+            <div class="operation-type-grid">
+              <div
+                class="operation-choice"
+                [class.active]="
+                  operationFromGroup.get('operationType')?.value === 'CREDIT'
+                "
+                [class.CREDIT]="
+                  operationFromGroup.get('operationType')?.value === 'CREDIT'
+                "
+                (click)="selectOperationType('CREDIT')"
+              >
+                <div class="icon-wrapper credit">
+                  <i class="bi bi-arrow-up-circle-fill"></i>
+                </div>
+                <span>Credit</span>
+                <p class="description">Add funds to account</p>
+              </div>
+              <div
+                class="operation-choice"
+                [class.active]="
+                  operationFromGroup.get('operationType')?.value === 'DEBIT'
+                "
+                [class.DEBIT]="
+                  operationFromGroup.get('operationType')?.value === 'DEBIT'
+                "
+                (click)="selectOperationType('DEBIT')"
+              >
+                <div class="icon-wrapper debit">
+                  <i class="bi bi-arrow-down-circle-fill"></i>
+                </div>
+                <span>Debit</span>
+                <p class="description">Withdraw from account</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Amount</label>
+            <div class="amount-input">
+              <i class="bi bi-currency-dollar"></i>
+              <input
+                type="number"
+                formControlName="amount"
+                class="form-control"
+                placeholder="Enter amount"
+                min="0"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <div class="description-input">
+              <i class="bi bi-chat-left-text"></i>
+              <input
+                type="text"
+                formControlName="description"
+                class="form-control"
+                placeholder="Enter description"
+              />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="
+                !operationFromGroup.get('operationType')?.value ||
+                !operationFromGroup.get('amount')?.value
+              "
+            >
+              <i class="bi bi-check-circle"></i>
+              Submit Operation
+            </button>
+          </div>
+        </form>
+      </div>
     </span>
   </div>
 </div>

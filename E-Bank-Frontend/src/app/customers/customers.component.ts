@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { Observable, catchError, throwError, BehaviorSubject } from 'rxjs';
 import { Customer } from '../model/customer.model';
 import { CustomerService } from '../services/customer.service';
@@ -11,6 +12,8 @@ import 'jspdf-autotable';
 
 @Component({
   selector: 'app-customers',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './customers.component.html',
   styleUrls: ['./customers.component.css']
 })

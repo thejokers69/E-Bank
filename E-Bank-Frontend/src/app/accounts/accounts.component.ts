@@ -1,13 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import {FormBuilder, FormGroup} from "@angular/forms";
-import {AccountsService} from "../services/accounts.service";
-import {BehaviorSubject, catchError, Observable, throwError, EMPTY} from "rxjs";
-import {AccountDetails} from "../model/account.model";
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AccountsService } from '../services/accounts.service';
+import { BehaviorSubject } from 'rxjs';
+import { AccountDetails } from '../model/account.model';
 import { ActivatedRoute } from '@angular/router';
-import {AuthService} from "../services/auth.service";
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-accounts',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './accounts.component.html',
   styleUrls: ['./accounts.component.css']
 })
