@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, inject, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../services/dashboard.service';
@@ -19,6 +19,7 @@ import {
 } from 'chart.js';
 import {AuthService} from "../services/auth.service";
 import { AccountService } from '../services/account.service';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -32,8 +33,13 @@ export class DashboardComponent implements OnInit {
   searchTerm: string = '';
   filteredAccounts: any[] = [];
   dashboardChartsInfo: any;
-  transactionChart: any;
-  bankAccountChart: any;
+  transactionChart: Chart | null = null;
+  bankAccountChart: Chart | null = null;
+  private transactionChartLabels: string[] = [];
+  private transactionChartData: number[] = [];
+  private bankChartLabels: string[] = [];
+  private bankChartData: number[] = [];
+  private readonly themeService = inject(ThemeService);
   showFilters: boolean = false;
   accountTypes: string[] = ['SavingAccount', 'CurrentAccount'];
   accountStatuses: string[] = ['ACTIVATED', 'SUSPENDED', 'CREATED'];
@@ -58,7 +64,12 @@ export class DashboardComponent implements OnInit {
     private authService: AuthService,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef
-  ) { }
+  ) {
+    effect(() => {
+      this.themeService.resolvedTheme();
+      this.ngZone.run(() => this.refreshChartsForTheme());
+    });
+  }
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -191,6 +202,11 @@ export class DashboardComponent implements OnInit {
         const chart2Labels = types.map((item: any) => item.type);
         const chart2Data = types.map((item: any) => item.count);
 
+        this.transactionChartLabels = chart1Labels;
+        this.transactionChartData = chart1Data;
+        this.bankChartLabels = chart2Labels;
+        this.bankChartData = chart2Data;
+
         this.ngZone.run(() => {
           this.createTransactionChart(chart1Labels, chart1Data);
           this.createBankAccountChart(chart2Labels, chart2Data);
@@ -203,8 +219,66 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  private readCssVar(name: string, fallback: string): string {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+  }
+
+  private chartPalette(): { primary: string; secondary: string; warning: string; text: string; grid: string; fill: string } {
+    const primary = this.readCssVar('--bs-primary', '#0d6efd');
+    const text = this.readCssVar('--bs-body-color', '#212529');
+    const grid = this.readCssVar('--bs-border-color', '#dee2e6');
+    return {
+      primary,
+      secondary: this.readCssVar('--bs-success', '#20c997'),
+      warning: this.readCssVar('--bs-warning', '#ffc107'),
+      text,
+      grid,
+      fill: this.withAlpha(primary, 0.15),
+    };
+  }
+
+  private withAlpha(hexColor: string, alpha: number): string {
+    if (hexColor.startsWith('rgb')) {
+      return hexColor;
+    }
+    const normalized = hexColor.replace('#', '');
+    const full = normalized.length === 3
+      ? normalized.split('').map((c) => c + c).join('')
+      : normalized;
+    const r = parseInt(full.slice(0, 2), 16);
+    const g = parseInt(full.slice(2, 4), 16);
+    const b = parseInt(full.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  private refreshChartsForTheme(): void {
+    if (!this.transactionChartLabels.length && !this.bankChartLabels.length) {
+      return;
+    }
+    if (this.transactionChart) {
+      this.transactionChart.destroy();
+      this.transactionChart = null;
+    }
+    if (this.bankAccountChart) {
+      this.bankAccountChart.destroy();
+      this.bankAccountChart = null;
+    }
+    if (this.transactionChartLabels.length) {
+      this.createTransactionChart(this.transactionChartLabels, this.transactionChartData);
+    }
+    if (this.bankChartLabels.length) {
+      this.createBankAccountChart(this.bankChartLabels, this.bankChartData);
+    }
+  }
+
   createTransactionChart(labels: string[], data: number[]) {
     Chart.register(LineController, LineElement, PointElement, LinearScale, Title, Tooltip, CategoryScale, Filler);
+
+    const colors = this.chartPalette();
+    if (this.transactionChart) {
+      this.transactionChart.destroy();
+    }
 
     this.transactionChart = new Chart('transactionChart', {
       type: 'line',
@@ -214,8 +288,8 @@ export class DashboardComponent implements OnInit {
           label: 'Transaction Volume',
           data: data,
           fill: true,
-          borderColor: '#0d6efd',
-          backgroundColor: 'rgba(13, 110, 253, 0.1)',
+          borderColor: colors.primary,
+          backgroundColor: colors.fill,
           tension: 0.4
         }]
       },
@@ -224,26 +298,36 @@ export class DashboardComponent implements OnInit {
         plugins: {
           title: {
             display: true,
-            text: 'Monthly Transaction Volume'
+            text: 'Monthly Transaction Volume',
+            color: colors.text,
           },
           tooltip: {
             enabled: true
-          }
+          },
+          legend: {
+            labels: { color: colors.text },
+          },
         },
         scales: {
           x: {
             type: 'category',
             title: {
               display: true,
-              text: 'Months'
-            }
+              text: 'Months',
+              color: colors.text,
+            },
+            ticks: { color: colors.text },
+            grid: { color: colors.grid },
           },
           y: {
             beginAtZero: true,
             title: {
               display: true,
-              text: 'Volume'
-            }
+              text: 'Volume',
+              color: colors.text,
+            },
+            ticks: { color: colors.text },
+            grid: { color: colors.grid },
           }
         }
       }
@@ -251,8 +335,12 @@ export class DashboardComponent implements OnInit {
   }
 
   createBankAccountChart(labels: string[], data: number[]) {
-    // Register required components for doughnut chart
     Chart.register(DoughnutController, ArcElement, Tooltip, Title);
+
+    const colors = this.chartPalette();
+    if (this.bankAccountChart) {
+      this.bankAccountChart.destroy();
+    }
 
     this.bankAccountChart = new Chart('segmentChart', {
       type: 'doughnut',
@@ -260,7 +348,7 @@ export class DashboardComponent implements OnInit {
         labels: labels,
         datasets: [{
           data: data,
-          backgroundColor: ['#0d6efd', '#20c997', '#ffc107']
+          backgroundColor: [colors.primary, colors.secondary, colors.warning]
         }]
       },
       options: {
@@ -268,11 +356,15 @@ export class DashboardComponent implements OnInit {
         plugins: {
           title: {
             display: true,
-            text: 'Bank Accounts'
+            text: 'Bank Accounts',
+            color: colors.text,
           },
           tooltip: {
             enabled: true
-          }
+          },
+          legend: {
+            labels: { color: colors.text },
+          },
         }
       }
     });

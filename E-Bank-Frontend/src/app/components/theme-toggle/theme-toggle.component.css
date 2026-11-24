@@ -1,0 +1,95 @@
+.eb-theme-toggle {
+  display: inline-flex;
+  align-items: stretch;
+  padding: 3px;
+  gap: 0;
+  border-radius: 0.625rem;
+  border: 1px solid var(--eb-toggle-border);
+  background: var(--eb-toggle-shell-bg);
+  box-shadow: var(--eb-toggle-shell-shadow);
+}
+
+.eb-theme-segment {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.35rem 0.65rem;
+  border: none;
+  border-radius: 0.45rem;
+  background: transparent;
+  color: var(--eb-toggle-inactive-fg);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  z-index: 0;
+}
+
+.eb-theme-segment:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 20%;
+  height: 60%;
+  width: 1px;
+  background: var(--eb-toggle-divider);
+  pointer-events: none;
+}
+
+.eb-theme-segment--active::after,
+.eb-theme-segment--active + .eb-theme-segment::after {
+  opacity: 0;
+}
+
+.eb-theme-segment:hover:not(.eb-theme-segment--active) {
+  color: var(--eb-toggle-hover-fg);
+  background: var(--eb-toggle-hover-bg);
+}
+
+.eb-theme-segment--active {
+  color: var(--eb-toggle-active-fg);
+  background: var(--eb-toggle-active-bg);
+  box-shadow: var(--eb-toggle-active-shadow);
+  z-index: 1;
+}
+
+.eb-theme-segment:focus-visible {
+  outline: 2px solid var(--eb-toggle-focus-ring);
+  outline-offset: 1px;
+}
+
+.eb-theme-label {
+  font-size: inherit;
+}
+
+@media (max-width: 576px) {
+  .eb-theme-label {
+    display: none;
+  }
+
+  .eb-theme-segment {
+    padding: 0.4rem 0.55rem;
+  }
+}
+
+:host(.theme-toggle--on-navbar) .eb-theme-toggle {
+  --eb-toggle-shell-bg: var(--eb-toggle-nav-shell-bg);
+  --eb-toggle-border: var(--eb-toggle-nav-border);
+  --eb-toggle-divider: var(--eb-toggle-nav-divider);
+  --eb-toggle-inactive-fg: var(--eb-toggle-nav-inactive-fg);
+  --eb-toggle-hover-fg: var(--eb-toggle-nav-hover-fg);
+  --eb-toggle-hover-bg: var(--eb-toggle-nav-hover-bg);
+  --eb-toggle-active-fg: var(--eb-toggle-nav-active-fg);
+  --eb-toggle-active-bg: var(--eb-toggle-nav-active-bg);
+  --eb-toggle-active-shadow: var(--eb-toggle-nav-active-shadow);
+  --eb-toggle-focus-ring: var(--eb-toggle-nav-focus-ring);
+  --eb-toggle-shell-shadow: none;
+}
+
+:host(.theme-toggle--compact) .eb-theme-segment {
+  padding: 0.3rem 0.55rem;
+}

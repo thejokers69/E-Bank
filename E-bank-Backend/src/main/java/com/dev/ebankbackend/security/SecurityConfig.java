@@ -66,13 +66,14 @@ public class SecurityConfig {
 
     @Bean
     JwtEncoder jwtEncoder() {
+        // HS256 needs ≥32 bytes; Render generateValue secrets are often too short for HS512.
         return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey.getBytes()));
     }
 
     @Bean
     JwtDecoder jwtDecoder() {
-        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), "HmacSHA512");
-        return NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.HS512).build();
+        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
+        return NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.HS256).build();
     }
 
     @Bean

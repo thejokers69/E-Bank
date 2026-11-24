@@ -56,11 +56,13 @@ public class SecurityController {
                     .build();
 
             String token = jwtEncoder.encode(JwtEncoderParameters.from(
-                    JwsHeader.with(MacAlgorithm.HS512).build(), claims)).getTokenValue();
+                    JwsHeader.with(MacAlgorithm.HS256).build(), claims)).getTokenValue();
 
             return Map.of("access-token", token);
         } catch (AuthenticationException ex) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication failed. Please check your credentials.");
+        } catch (JwtEncodingException ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Token signing failed. Check JWT_SECRET length.");
         }
     }
 

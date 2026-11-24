@@ -1,4 +1,4 @@
-<div class="container-fluid py-4 bg-light min-vh-100">
+<div class="container-fluid py-4 bg-body min-vh-100 eb-admin-page">
   <div class="transactions-header">
     <div class="header-content">
       <div class="title-section">
@@ -36,18 +36,9 @@
     <div class="search-box">
       <div class="search-wrapper">
         <i class="bi bi-search search-icon"></i>
-        <input
-          type="text"
-          [(ngModel)]="searchTerm"
-          (input)="filterTransactions()"
-          placeholder="Search transactions..."
-          class="search-input"
-        />
-        <button 
-          class="search-clear" 
-          *ngIf="searchTerm" 
-          (click)="searchTerm = ''; filterTransactions()"
-        >
+        <input type="text" [(ngModel)]="searchTerm" (input)="filterTransactions()" placeholder="Search transactions..."
+          class="search-input" />
+        <button class="search-clear" *ngIf="searchTerm" (click)="searchTerm = ''; filterTransactions()">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
@@ -60,12 +51,8 @@
           Transaction Type
         </label>
         <div class="select-wrapper">
-          <select
-            id="transactionType"
-            [(ngModel)]="selectedType"
-            (change)="filterTransactions()"
-            class="filter-input select-input"
-          >
+          <select id="transactionType" [(ngModel)]="selectedType" (change)="filterTransactions()"
+            class="filter-input select-input">
             <option value="">All Types</option>
             <option value="CREDIT">Credit</option>
             <option value="DEBIT">Debit</option>
@@ -80,13 +67,8 @@
           From Date
         </label>
         <div class="date-input-wrapper">
-          <input
-            type="date"
-            id="fromDate"
-            [(ngModel)]="fromDate"
-            (change)="filterTransactions()"
-            class="filter-input date-input"
-          />
+          <input type="date" id="fromDate" [(ngModel)]="fromDate" (change)="filterTransactions()"
+            class="filter-input date-input" />
           <i class="bi bi-calendar-event date-icon"></i>
         </div>
       </div>
@@ -97,13 +79,8 @@
           To Date
         </label>
         <div class="date-input-wrapper">
-          <input
-            type="date"
-            id="toDate"
-            [(ngModel)]="toDate"
-            (change)="filterTransactions()"
-            class="filter-input date-input"
-          />
+          <input type="date" id="toDate" [(ngModel)]="toDate" (change)="filterTransactions()"
+            class="filter-input date-input" />
           <i class="bi bi-calendar-event date-icon"></i>
         </div>
       </div>
@@ -119,7 +96,7 @@
           </div>
           <p class="mt-2">Loading transactions...</p>
         </div>
-        
+
         <table class="table table-hover mb-0" *ngIf="!isLoading && filteredTransactions.length > 0">
           <thead>
             <tr>
@@ -162,28 +139,28 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let transaction of filteredTransactions | paginate: { itemsPerPage: pageSize, currentPage: currentPage }" 
-                class="align-middle transaction-row"
-                (click)="openTransactionDetails(transaction, $event)">
+            <tr
+              *ngFor="let transaction of filteredTransactions | paginate: { itemsPerPage: pageSize, currentPage: currentPage }"
+              class="align-middle transaction-row" (click)="openTransactionDetails(transaction, $event)">
               <td class="text-center">
                 <span class="fw-medium">#{{transaction.id}}</span>
               </td>
               <td class="text-center">
-                <span class="badge bg-primary-subtle text-primary account-badge" 
-                      (click)="copyToClipboard(transaction.bank_account_id, transaction.id); $event.stopPropagation()"
-                      (mouseenter)="hoveredRowId = getUniqueRowId(transaction)"
-                      (mouseleave)="hoveredRowId = null"
-                      [class.copied]="copiedId === transaction.bank_account_id && copiedTransactionId === transaction.id">
+                <span class="badge bg-primary-subtle text-primary account-badge"
+                  (click)="copyToClipboard(transaction.bank_account_id, transaction.id); $event.stopPropagation()"
+                  (mouseenter)="hoveredRowId = getUniqueRowId(transaction)" (mouseleave)="hoveredRowId = null"
+                  [class.copied]="copiedId === transaction.bank_account_id && copiedTransactionId === transaction.id">
                   <i class="bi bi-clipboard me-1"></i>
                   {{truncateAccountId(transaction.bank_account_id)}}
                   <span class="account-tooltip" *ngIf="hoveredRowId === getUniqueRowId(transaction)">
                     {{transaction.bank_account_id}}
                   </span>
-                  <span class="copy-tooltip" *ngIf="copiedId === transaction.bank_account_id && copiedTransactionId === transaction.id">Copied!</span>
+                  <span class="copy-tooltip"
+                    *ngIf="copiedId === transaction.bank_account_id && copiedTransactionId === transaction.id">Copied!</span>
                 </span>
               </td>
               <td class="text-center">
-                <span class="badge bg-light customer-badge">
+                <span class="badge customer-badge">
                   <div class="d-flex align-items-center gap-2">
                     <div class="customer-avatar">
                       {{transaction.customer.name.charAt(0)}}
@@ -196,29 +173,31 @@
                 </span>
               </td>
               <td class="text-center">
-                <span [class]="'badge ' + (transaction.type === 'CREDIT' ? 'bg-success-subtle text-success amount-badge' : 'bg-danger-subtle text-danger amount-badge')">
+                <span
+                  [class]="'badge ' + (transaction.type === 'CREDIT' ? 'bg-success-subtle text-success amount-badge' : 'bg-danger-subtle text-danger amount-badge')">
                   {{transaction.type === 'CREDIT' ? '+' : '-'}}${{transaction.amount}}
                 </span>
               </td>
               <td class="text-center">
-                <span class="badge bg-secondary-subtle text-secondary date-badge">
+                <span class="badge date-badge">
                   <i class="bi bi-calendar-event me-2"></i>
                   {{transaction.operationDate | date:'MMM d, yyyy, h:mm a'}}
                 </span>
               </td>
               <td class="text-center">
-                <span class="badge" [class]="transaction.type === 'CREDIT' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
+                <span class="badge"
+                  [class]="transaction.type === 'CREDIT' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
                   {{transaction.type}}
                 </span>
               </td>
             </tr>
           </tbody>
         </table>
-        
+
         <div *ngIf="!isLoading && filteredTransactions.length === 0" class="no-results-container">
           <div class="no-results-content">
             <i class="bi bi-search fs-1 text-primary mb-3"></i>
-            <h4 class="text-dark mb-2">No Transactions Found</h4>
+            <h4 class="text-body mb-2">No Transactions Found</h4>
             <p class="text-muted mb-3">We couldn't find any transactions matching your search criteria</p>
             <div class="suggestions">
               <p class="suggestion-title">Try:</p>
@@ -247,19 +226,15 @@
               entries
             </label>
             <span class="mx-3">
-              Showing {{ (currentPage - 1) * pageSize + 1 }} to 
-              {{ currentPage * pageSize > filteredTransactions.length ? filteredTransactions.length : currentPage * pageSize }}
+              Showing {{ (currentPage - 1) * pageSize + 1 }} to
+              {{ currentPage * pageSize > filteredTransactions.length ? filteredTransactions.length : currentPage *
+              pageSize }}
               of {{ filteredTransactions.length }} entries
             </span>
           </div>
-          <pagination-controls
-            (pageChange)="currentPage = $event"
-            [previousLabel]="'Previous'"
-            [nextLabel]="'Next'"
-            [screenReaderPaginationLabel]="'Pagination'"
-            [screenReaderPageLabel]="'page'"
-            [screenReaderCurrentLabel]="'You are on page'"
-          >
+          <pagination-controls (pageChange)="currentPage = $event" [previousLabel]="'Previous'" [nextLabel]="'Next'"
+            [screenReaderPaginationLabel]="'Pagination'" [screenReaderPageLabel]="'page'"
+            [screenReaderCurrentLabel]="'You are on page'">
           </pagination-controls>
         </div>
       </div>
@@ -272,7 +247,8 @@
       <div class="modal-header">
         <h2 class="modal-title">
           Transaction Details
-          <span [class]="'badge ms-2 ' + (selectedTransaction?.type === 'CREDIT' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger')">
+          <span
+            [class]="'badge ms-2 ' + (selectedTransaction?.type === 'CREDIT' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger')">
             {{selectedTransaction?.type}}
           </span>
         </h2>
@@ -280,7 +256,7 @@
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
-      
+
       <div class="modal-body" *ngIf="selectedTransaction">
         <div class="detail-section">
           <div class="detail-group">
@@ -300,7 +276,7 @@
             <label>Operation ID</label>
             <p class="detail-value">#{{selectedTransaction.id}}</p>
           </div>
-          
+
           <div class="detail-group">
             <label>Account ID</label>
             <p class="detail-value">
@@ -313,7 +289,8 @@
           <div class="detail-group">
             <label>Amount</label>
             <p class="detail-value">
-              <span [class]="'badge ' + (selectedTransaction.type === 'CREDIT' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger')">
+              <span
+                [class]="'badge ' + (selectedTransaction.type === 'CREDIT' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger')">
                 {{selectedTransaction.type === 'CREDIT' ? '+' : '-'}}${{selectedTransaction.amount}}
               </span>
             </p>

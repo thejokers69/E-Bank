@@ -6,6 +6,24 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    (function () {
+      var key = 'eb-theme-mode';
+      var mode = 'system';
+      try {
+        var stored = localStorage.getItem(key);
+        if (stored === 'light' || stored === 'dark' || stored === 'system') {
+          mode = stored;
+        }
+      } catch (e) {}
+      var resolved = mode;
+      if (mode === 'system') {
+        resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-bs-theme', resolved);
+      document.documentElement.style.colorScheme = resolved;
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>

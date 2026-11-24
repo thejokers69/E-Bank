@@ -1,5 +1,5 @@
 import 'zone.js';
-import { enableProdMode, provideZoneChangeDetection } from '@angular/core';
+import { APP_INITIALIZER, enableProdMode, provideZoneChangeDetection } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -9,6 +9,7 @@ import { routes } from './app/app.routes';
 import { AppHttpInterceptor } from './app/interceptors/app-http.interceptor';
 import { zoneHttpInterceptor } from './app/interceptors/zone.interceptor';
 import { environment } from './environments/environment';
+import { ThemeService, themeInitializer } from './app/services/theme.service';
 
 if (environment.production) {
   enableProdMode();
@@ -21,5 +22,11 @@ bootstrapApplication(AppComponent, {
     provideHttpClient(withInterceptors([zoneHttpInterceptor]), withInterceptorsFromDi()),
     provideAnimations(),
     { provide: HTTP_INTERCEPTORS, useClass: AppHttpInterceptor, multi: true },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: themeInitializer,
+      deps: [ThemeService],
+      multi: true,
+    },
   ],
 }).catch(err => console.error(err));

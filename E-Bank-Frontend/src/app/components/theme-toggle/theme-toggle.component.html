@@ -1,0 +1,9 @@
+<div class="eb-theme-toggle" role="group" aria-label="Color theme">
+  @for (opt of options; track opt.mode) {
+  <button type="button" class="eb-theme-segment" [class.eb-theme-segment--active]="theme.mode() === opt.mode"
+    [attr.aria-pressed]="theme.mode() === opt.mode" [title]="opt.label" (click)="setMode(opt.mode)">
+    <i class="bi" [ngClass]="opt.icon" aria-hidden="true"></i>
+    <span class="eb-theme-label">{{ opt.label }}</span>
+  </button>
+  }
+</div>

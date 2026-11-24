@@ -4,14 +4,22 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background-color: #152850;
+  background-color: var(--eb-page-bg);
+  position: relative;
+}
+
+.login-theme-bar {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
 }
 
 .ct-con {
   display: flex;
   flex-direction: row;
   align-items: center;
-  background-color: #e0eefe;
+  background-color: var(--eb-login-panel-bg);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
@@ -31,7 +39,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  background-color: #ffffff;
+  background-color: var(--eb-login-card-bg);
   justify-content: center;
   padding: 40px;
   min-height: 500px;
@@ -41,7 +49,7 @@
 }
 
 .form-el h1 {
-  color: #152850;
+  color: var(--eb-login-heading);
   font-size: 32px;
   margin-bottom: 30px;
   font-weight: bold;
@@ -56,7 +64,7 @@
 }
 
 .lab {
-  color: #5a7184;
+  color: var(--eb-login-label);
   font-size: 16px;
   font-family: 'Roboto', sans-serif;
   font-weight: 500;
@@ -66,28 +74,28 @@
 .inp {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #e0e7ff;
+  border: 1px solid var(--eb-login-input-border);
   border-radius: 8px;
-  color: #152850;
+  color: var(--eb-login-heading);
   outline: none;
   font-size: 15px;
   transition: all 0.3s ease;
-  background-color: #f8faff;
+  background-color: var(--eb-login-input-bg);
 }
 
 .inp:focus {
-  border-color: #1565d8;
-  box-shadow: 0 0 0 3px rgba(21, 101, 216, 0.1);
-  background-color: #ffffff;
+  border-color: var(--eb-login-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--eb-login-accent) 12%, transparent);
+  background-color: var(--eb-login-card-bg);
 }
 
 .inp::placeholder {
-  color: #a0aec0;
+  color: var(--eb-text-muted);
 }
 
 .inp.error-input {
   border-color: #ff0b37;
-  background-color: #fff5f5;
+  background-color: color-mix(in srgb, #ff0b37 8%, var(--eb-login-card-bg));
 }
 
 .inp.error-input:focus {
@@ -97,7 +105,7 @@
 .but {
   width: 100%;
   margin-top: 20px;
-  background-color: #1565d8;
+  background-color: var(--eb-login-accent);
   color: #ffffff;
   border: none;
   outline: none;
@@ -111,7 +119,7 @@
 }
 
 .but:hover {
-  background-color: #1253b3;
+  filter: brightness(0.92);
   transform: translateY(-1px);
   box-shadow: 0 4px 6px rgba(21, 101, 216, 0.2);
 }
@@ -122,7 +130,7 @@
 }
 
 .but:disabled {
-  background-color: #94a3b8;
+  background-color: var(--bs-secondary);
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -147,22 +155,22 @@
   width: 100%;
   padding: 10px;
   margin: 10px 0;
-  background-color: #fff5f5;
+  background-color: color-mix(in srgb, #ff0b37 8%, var(--eb-login-card-bg));
   border-radius: 6px;
   border: 1px solid #ff0b37;
 }
 
 .demo-hint {
   margin: 0 0 8px;
-  color: #5a7184;
+  color: var(--eb-login-label);
   font-size: 13px;
 }
 
 .demo-hint code {
-  background: #f1f5f9;
+  background: var(--bs-tertiary-bg);
   padding: 2px 6px;
   border-radius: 4px;
-  color: #152850;
+  color: var(--eb-login-heading);
 }
 
 form {
@@ -174,4 +182,20 @@ form {
   flex-direction: column;
   align-items: center;
   width: 300px;
+}
+
+@media (max-width: 992px) {
+  .ct-con {
+    flex-direction: column;
+  }
+
+  .ima {
+    height: 280px;
+    width: 280px;
+  }
+
+  .form-el {
+    width: 100%;
+    min-height: auto;
+  }
 }
